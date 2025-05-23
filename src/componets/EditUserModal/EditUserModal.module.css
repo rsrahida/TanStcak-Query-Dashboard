@@ -1,0 +1,152 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.49);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background-color: #ffb9b9;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 480px;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.25s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.header h2 {
+  font-size: 18px;
+  margin: 0;
+  color: #222;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.closeBtn:hover {
+  color: #730000;
+  background: none;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section {
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.section h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #444;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.row input {
+  flex: 1;
+  min-width: 100px;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+  margin-bottom: 5px;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #875800;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.12);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cancelBtn,
+.saveBtn {
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cancelBtn {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.cancelBtn:hover {
+  background-color: #e0e0e0;
+}
+
+.saveBtn {
+  background-color: #875800;
+  color: #fff;
+}
+
+.saveBtn:hover {
+  background-color: #c78100;
+}
