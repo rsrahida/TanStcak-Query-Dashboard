@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { FormEvent, ChangeEvent, MouseEvent } from "react";
 import { useUsersContext } from "../../context/UsersContext";
+import { useUpdateUser } from "../../hooks/useUsers";
 import type { User } from "../../hooks/useUsers";
 import styles from "./EditUserModal.module.css";
 
@@ -20,7 +21,8 @@ interface EditFormData {
 }
 
 export const EditUserModal = () => {
-  const { editingUser, setEditingUser, updateUser } = useUsersContext();
+  const { editingUser, setEditingUser } = useUsersContext();
+  const updateUserMutation = useUpdateUser();
 
   const [formData, setFormData] = useState<EditFormData>({
     name: "",
@@ -64,7 +66,7 @@ export const EditUserModal = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!formData.name.trim() || !formData.email.trim()) {
@@ -93,15 +95,23 @@ export const EditUserModal = () => {
       },
     };
 
-    updateUser(updatedUser);
+    try {
+      await updateUserMutation.mutateAsync(updatedUser);
+      setEditingUser(null);
+    } catch (error) {
+      console.error("Yeniləmə xətası:", error);
+      alert("İstifadəçi yenilənərkən xəta baş verdi");
+    }
   };
 
   const handleClose = () => {
-    setEditingUser(null);
+    if (!updateUserMutation.isPending) {
+      setEditingUser(null);
+    }
   };
 
   const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !updateUserMutation.isPending) {
       handleClose();
     }
   };
@@ -115,6 +125,7 @@ export const EditUserModal = () => {
             onClick={handleClose}
             className={styles.closeBtn}
             type="button"
+            disabled={updateUserMutation.isPending}
           >
             ×
           </button>
@@ -130,12 +141,14 @@ export const EditUserModal = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                disabled={updateUserMutation.isPending}
               />
               <input
                 name="username"
                 placeholder="İstifadəçi adı"
                 value={formData.username}
                 onChange={handleChange}
+                disabled={updateUserMutation.isPending}
               />
             </div>
             <div className={styles.row}>
@@ -146,6 +159,7 @@ export const EditUserModal = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                disabled={updateUserMutation.isPending}
               />
               <input
                 name="phone"
@@ -153,6 +167,7 @@ export const EditUserModal = () => {
                 placeholder="Telefon"
                 value={formData.phone}
                 onChange={handleChange}
+                disabled={updateUserMutation.isPending}
               />
             </div>
             <input
@@ -161,6 +176,7 @@ export const EditUserModal = () => {
               placeholder="Website"
               value={formData.website}
               onChange={handleChange}
+              disabled={updateUserMutation.isPending}
             />
           </div>
 
@@ -172,12 +188,14 @@ export const EditUserModal = () => {
                 placeholder="Küçə"
                 value={formData.street}
                 onChange={handleChange}
+                disabled={updateUserMutation.isPending}
               />
               <input
                 name="suite"
                 placeholder="Suite/Mənzil"
                 value={formData.suite}
                 onChange={handleChange}
+                disabled={updateUserMutation.isPending}
               />
             </div>
             <div className={styles.row}>
@@ -186,12 +204,14 @@ export const EditUserModal = () => {
                 placeholder="Şəhər"
                 value={formData.city}
                 onChange={handleChange}
+                disabled={updateUserMutation.isPending}
               />
               <input
                 name="zipcode"
                 placeholder="Poçt kodu"
                 value={formData.zipcode}
                 onChange={handleChange}
+                disabled={updateUserMutation.isPending}
               />
             </div>
           </div>
@@ -203,12 +223,14 @@ export const EditUserModal = () => {
               placeholder="Şirkət adı"
               value={formData.company}
               onChange={handleChange}
+              disabled={updateUserMutation.isPending}
             />
             <input
               name="catchPhrase"
               placeholder="Şirkət sloganı"
               value={formData.catchPhrase}
               onChange={handleChange}
+              disabled={updateUserMutation.isPending}
             />
             <textarea
               name="bs"
@@ -216,19 +238,33 @@ export const EditUserModal = () => {
               value={formData.bs}
               onChange={handleChange}
               rows={3}
+              disabled={updateUserMutation.isPending}
             />
           </div>
+
+          {updateUserMutation.isError && (
+            <div style={{ color: "red", marginBottom: "1rem" }}>
+              Xəta: {updateUserMutation.error?.message}
+            </div>
+          )}
 
           <div className={styles.actions}>
             <button
               type="button"
               onClick={handleClose}
               className={styles.cancelBtn}
+              disabled={updateUserMutation.isPending}
             >
               Ləğv et
             </button>
-            <button type="submit" className={styles.saveBtn}>
-              Yadda saxla
+            <button
+              type="submit"
+              className={styles.saveBtn}
+              disabled={updateUserMutation.isPending}
+            >
+              {updateUserMutation.isPending
+                ? "Yadda saxlanılır..."
+                : "Yadda saxla"}
             </button>
           </div>
         </form>

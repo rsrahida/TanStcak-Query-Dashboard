@@ -1,18 +1,21 @@
 import { useUsers } from "../hooks/useUsers";
-import { UsersProvider, useUsersContext } from "../context/UsersContext";
+import { UsersProvider } from "../context/UsersContext";
 import { AddUserForm } from "../componets/AddUserForm/AddUserForm";
 import { UserCard } from "../componets/UserCard/UserCard";
 import { UserModal } from "../componets/UserModal/UserModal";
 import { EditUserModal } from "../componets/EditUserModal/EditUserModal";
+import { useQueryClient } from "@tanstack/react-query";
+import type { User } from "../hooks/useUsers";
 
 const DashboardContent = () => {
-  const { users } = useUsersContext();
+  const queryClient = useQueryClient();
+  const users = queryClient.getQueryData<User[]>(["users"]) || [];
 
   return (
-    <div style={{ padding: "10px" }}>
+    <div style={{ padding: "2rem" }}>
       <h1 style={{ textAlign: "center" }}>Admin Panel</h1>
       <AddUserForm />
-      <div style={{ marginTop: "10px" }}>
+      <div style={{ marginTop: "2rem" }}>
         {users.length === 0 ? (
           <p>Heç bir istifadəçi yoxdur</p>
         ) : (
@@ -29,11 +32,11 @@ export const Dashboard = () => {
   const { data, isLoading, isError, error } = useUsers();
 
   if (isLoading) return <p>Yüklənir...</p>;
-  if (isError) return <p>Xəta: {error?.message || "xəta"}</p>;
+  if (isError) return <p>Xəta: {error?.message || " xəta"}</p>;
   if (!data) return <p>İstifadəçi yoxdur</p>;
 
   return (
-    <UsersProvider initialUsers={data}>
+    <UsersProvider>
       <DashboardContent />
     </UsersProvider>
   );

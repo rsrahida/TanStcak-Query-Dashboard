@@ -1,5 +1,6 @@
 import type { User } from "../../hooks/useUsers";
 import { useUsersContext } from "../../context/UsersContext";
+import { useDeleteUser } from "../../hooks/useUsers";
 import styles from "./UserCard.module.css";
 
 interface UserCardProps {
@@ -7,12 +8,20 @@ interface UserCardProps {
 }
 
 export const UserCard = ({ user }: UserCardProps) => {
-  const { setSelectedUser, setUsers, users, setEditingUser } = useUsersContext();
+  const { setSelectedUser, setEditingUser } = useUsersContext();
+  const deleteUserMutation = useDeleteUser();
 
-  const handleDelete = () => {
-    const confirmDelete = window.confirm(`${user.name} adlı istifadəçini silmək istədiyinizə əminsiniz?`);
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      `${user.name} adlı istifadəçini silmək istədiyinizə əminsiniz?`
+    );
     if (confirmDelete) {
-      setUsers(users.filter((u) => u.id !== user.id));
+      try {
+        await deleteUserMutation.mutateAsync(user.id);
+      } catch (error) {
+        console.error("Silmə xətası:", error);
+        alert("İstifadəçi silinərkən xəta baş verdi");
+      }
     }
   };
 
@@ -44,13 +53,28 @@ export const UserCard = ({ user }: UserCardProps) => {
         <button onClick={handleView} type="button">
           Bax
         </button>
-        <button onClick={handleEdit} type="button" className={styles.editBtn}>
+        <button
+          onClick={handleEdit}
+          type="button"
+          className={styles.editBtn}
+          disabled={deleteUserMutation.isPending}
+        >
           Redaktə et
         </button>
-        <button onClick={handleDelete} type="button" className={styles.deleteBtn}>
-          Sil
+        <button
+          onClick={handleDelete}
+          type="button"
+          className={styles.deleteBtn}
+          disabled={deleteUserMutation.isPending}
+        >
+          {deleteUserMutation.isPending ? "Silinir..." : "Sil"}
         </button>
       </div>
+      {deleteUserMutation.isError && (
+        <p style={{ color: "red", fontSize: "0.8rem", marginTop: "0.5rem" }}>
+          Silmə xətası: {deleteUserMutation.error?.message}
+        </p>
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent, ChangeEvent } from "react";
-import { useUsersContext } from "../../context/UsersContext";
+import { useAddUser } from "../../hooks/useUsers";
 import type { User } from "../../hooks/useUsers";
 import styles from "./AddUserForm.module.css";
 
@@ -15,7 +15,7 @@ interface FormData {
 }
 
 export const AddUserForm = () => {
-  const { users, setUsers } = useUsersContext();
+  const addUserMutation = useAddUser();
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -31,25 +31,17 @@ export const AddUserForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const generateNewId = (): number => {
-    const maxId = users.reduce((max, user) => Math.max(max, user.id), 0);
-    return maxId + 1;
-  };
-
-  const handleAdd = (e?: FormEvent) => {
+  const handleAdd = async (e?: FormEvent) => {
     e?.preventDefault();
-
+    
     if (!formData.name.trim() || !formData.email.trim()) {
       alert("Ad və Email boş ola bilməz");
       return;
     }
 
-    const newUser: User = {
-      id: generateNewId(),
+    const newUser: Omit<User, 'id'> = {
       name: formData.name.trim(),
-      username:
-        formData.username.trim() ||
-        formData.name.toLowerCase().replace(/\s+/g, ""),
+      username: formData.username.trim() || formData.name.toLowerCase().replace(/\s+/g, ''),
       email: formData.email.trim(),
       phone: formData.phone.trim(),
       website: formData.website.trim(),
@@ -70,16 +62,21 @@ export const AddUserForm = () => {
       },
     };
 
-    setUsers([...users, newUser]);
-    setFormData({
-      name: "",
-      username: "",
-      email: "",
-      phone: "",
-      company: "",
-      city: "",
-      website: "",
-    });
+    try {
+      await addUserMutation.mutateAsync(newUser);
+      setFormData({
+        name: "",
+        username: "",
+        email: "",
+        phone: "",
+        company: "",
+        city: "",
+        website: "",
+      });
+    } catch (error) {
+      console.error("Əlavə etmə xətası:", error);
+      alert("İstifadəçi əlavə edilərkən xəta baş verdi");
+    }
   };
 
   return (
@@ -90,12 +87,14 @@ export const AddUserForm = () => {
         value={formData.name}
         onChange={handleChange}
         required
+        disabled={addUserMutation.isPending}
       />
       <input
         name="username"
         placeholder="İstifadəçi adı"
         value={formData.username}
         onChange={handleChange}
+        disabled={addUserMutation.isPending}
       />
       <input
         name="email"
@@ -104,6 +103,7 @@ export const AddUserForm = () => {
         value={formData.email}
         onChange={handleChange}
         required
+        disabled={addUserMutation.isPending}
       />
       <input
         name="phone"
@@ -111,18 +111,21 @@ export const AddUserForm = () => {
         placeholder="Telefon"
         value={formData.phone}
         onChange={handleChange}
+        disabled={addUserMutation.isPending}
       />
       <input
         name="company"
         placeholder="Şirkət"
         value={formData.company}
         onChange={handleChange}
+        disabled={addUserMutation.isPending}
       />
       <input
         name="city"
         placeholder="Şəhər"
         value={formData.city}
         onChange={handleChange}
+        disabled={addUserMutation.isPending}
       />
       <input
         name="website"
@@ -130,8 +133,16 @@ export const AddUserForm = () => {
         placeholder="Website"
         value={formData.website}
         onChange={handleChange}
+        disabled={addUserMutation.isPending}
       />
-      <button type="submit">Əlavə et</button>
+      <button type="submit" disabled={addUserMutation.isPending}>
+        {addUserMutation.isPending ? "Əlavə olunur..." : "Əlavə et"}
+      </button>
+      {addUserMutation.isError && (
+        <p style={{ color: "red", marginTop: "0.5rem" }}>
+          Xəta: {addUserMutation.error?.message}
+        </p>
+      )}
     </form>
   );
 };
